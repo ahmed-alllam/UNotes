@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 09/03/2020, 23:56.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 10/03/2020, 00:09.
 
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
@@ -82,51 +82,8 @@ class NoteDetailSerializer(serializers.ModelSerializer):
         model = NoteModel
         fields = ('sort', 'title', 'text', 'attachments')
         extra_kwargs = {
-            'sort': {'required': False}
+            'sort': {'read_only': True}
         }
-
-    def validate_sort(self, sort):
-        """validator for sort field"""
-
-        if not self.instance:
-            raise serializers.ValidationError(_("sort can't be specified before creation"))
-        if sort > self.instance.notebook.notes.count() or sort < 1:
-            raise serializers.ValidationError(_("invalid sort number"))
-        return sort
-
-    def update(self, instance, validated_data):
-        """updates a note"""
-
-        instance.title = validated_data.get('title', instance.title)
-        instance.description = validated_data.get('text', instance.description)
-
-        if validated_data.get('sort', None):
-            old_sort = instance.sort
-            new_sort = validated_data.get('sort')
-
-            instance.sort = None
-            instance.save()
-
-            if new_sort - old_sort > 0:
-                notes = instance.notebook.notes.filter(sort__gt=old_sort,
-                                                       sort__lte=new_sort,
-                                                       sort__isnull=False)
-                for note in notes:
-                    note.sort -= 1
-                    note.save()
-
-            elif new_sort - old_sort < 0:
-                notes = instance.notebook.notes.filter(sort__lt=old_sort,
-                                                       sort__gte=new_sort,
-                                                       sort__isnull=False).order_by('-sort')
-                for note in notes:
-                    note.sort += 1
-                    note.save()
-
-            instance.sort = new_sort
-            instance.save()
-
-        return instance
 
 
 class NoteSerializer(serializers.ModelSerializer):
@@ -146,47 +103,5 @@ class NoteBookSerializer(serializers.ModelSerializer):
         model = NoteBookModel
         fields = ('sort', 'title', 'notes')
         extra_kwargs = {
-            'sort': {'required': False}
+            'sort': {'read_only': True}
         }
-
-    def validate_sort(self, sort):
-        """validator for sort field"""
-
-        if not self.instance:
-            raise serializers.ValidationError(_("sort can't be specified before creation"))
-        if sort > self.instance.user.notebooks.count() or sort < 1:
-            raise serializers.ValidationError(_("invalid sort number"))
-        return sort
-
-    def update(self, instance, validated_data):
-        """updates a notebook"""
-
-        instance.title = validated_data.get('title', instance.title)
-
-        if validated_data.get('sort', None):
-            old_sort = instance.sort
-            new_sort = validated_data.get('sort')
-
-            instance.sort = None
-            instance.save()
-
-            if new_sort - old_sort > 0:
-                notebooks = instance.user.notebooks.filter(sort__gt=old_sort,
-                                                           sort__lte=new_sort,
-                                                           sort__isnull=False)
-                for notebook in notebooks:
-                    notebook.sort -= 1
-                    notebook.save()
-
-            elif new_sort - old_sort < 0:
-                notebooks = instance.user.notebooks.filter(sort__lt=old_sort,
-                                                           sort__gte=new_sort,
-                                                           sort__isnull=False).order_by('-sort')
-                for notebook in notebooks:
-                    notebook.sort += 1
-                    notebook.save()
-
-            instance.sort = new_sort
-            instance.save()
-
-        return instance

@@ -55,8 +55,10 @@ def resort_notebooks(sender, **kwargs):
     """The receiver called after a note book is deleted
     to resort them"""
 
-    notebook = kwargs['instance']
-    notebook.user.notebooks.filter(sort__gt=notebook.sort).update(sort=F('sort') - 1)
+    notebooks = kwargs['instance'].user.notebooks.filter(sort__gt=kwargs['instance'].sort)
+    for notebook in notebooks:
+        notebook.sort -= 1
+        notebook.save()
 
 
 @receiver(post_delete, sender=NoteModel)
@@ -64,12 +66,14 @@ def resort_notes(sender, **kwargs):
     """The receiver called after a note is deleted
     to resort them"""
 
-    note = kwargs['instance']
-    note.notebook.notes.filter(sort__gt=note.sort).update(sort=F('sort') - 1)
+    notes = kwargs['instance'].notebook.notes.filter(sort__gt=kwargs['instance'].sort)
+    for note in notes:
+        note.sort -= 1
+        note.save()
 
 
 @receiver(post_delete, sender=NoteAttachmentModel)
-def resort_note_attachment(sender, **kwargs):
+def resort_note_attachments(sender, **kwargs):
     """The receiver called after a note attachment is deleted
     to resort them"""
 

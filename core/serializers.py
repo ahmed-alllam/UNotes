@@ -1,9 +1,11 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 09/03/2020, 17:18.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 09/03/2020, 23:56.
 
-import django.contrib.auth.password_validation as validators
 from django.contrib.auth.models import User
-from django.core import exceptions
+from django.contrib.auth.password_validation import validate_password
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from core.models import UserProfileModel, NoteModel, NoteBookModel, NoteAttachmentModel
 
@@ -11,38 +13,25 @@ from core.models import UserProfileModel, NoteModel, NoteBookModel, NoteAttachme
 class UserProfileSerializer(serializers.ModelSerializer):
     """The serializer for the user profile model"""
 
-    first_name = serializers.CharField(source='account.first_name')
-    last_name = serializers.CharField(source='account.last_name')
-    username = serializers.CharField(source='account.username')
-    password = serializers.CharField(source='account.password')
+    first_name = serializers.CharField(source='account.first_name', label=_('first name'),
+                                       max_length=30)
+    last_name = serializers.CharField(source='account.last_name', label=_('last name'),
+                                      max_length=30)
+    username = serializers.CharField(source='account.username', label=_('username'),
+                                     max_length=150,
+                                     validators=[UnicodeUsernameValidator(),
+                                                 UniqueValidator(queryset=User.objects.all())],
+                                     help_text=_(
+                                         'Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.'),
+                                     error_messages={
+                                         'unique': _("A user with that username already exists.")
+                                     })
+    password = serializers.CharField(source='account.password', write_only=True, label=_('password'),
+                                     max_length=128, validators=[validate_password])
 
     class Meta:
         model = UserProfileModel
         fields = ('first_name', 'last_name', 'username', 'password', 'profile_photo')
-        extra_kwargs = {
-            'profile_photo': {'required': False},
-            'first_name': {'allow_blank': False, 'required': True},
-            'last_name': {'allow_blank': False, 'required': True},
-            'password': {'write_only': True}
-        }
-
-    def validate(self, data):
-        """Validate user's password using django auth password validators"""
-
-        account = data.get('account', {})
-        password = account.get('password', '')
-        if password:
-            user = User(**data)
-            errors = dict()
-            try:
-                validators.validate_password(password=password, user=user)
-            except exceptions.ValidationError as e:
-                errors['password'] = list(e.messages)
-
-            if errors:
-                raise serializers.ValidationError(errors)
-
-        return data
 
     def create(self, validated_data):
         """Creates a new user profile from the request's data"""
@@ -84,13 +73,13 @@ class NoteAttachmentSerializer(serializers.ModelSerializer):
         }
 
 
-class NoteSerializer(serializers.ModelSerializer):
-    """The serializer for the note model"""
+class NoteDetailSerializer(serializers.ModelSerializer):
+    """The Detailed serializer for the note model"""
 
-    attachments = NoteAttachmentModel(many=True, read_only=True)
+    attachments = NoteAttachmentSerializer(many=True, read_only=True)
 
     class Meta:
-        model = NoteBookModel
+        model = NoteModel
         fields = ('sort', 'title', 'text', 'attachments')
         extra_kwargs = {
             'sort': {'required': False}
@@ -100,9 +89,9 @@ class NoteSerializer(serializers.ModelSerializer):
         """validator for sort field"""
 
         if not self.instance:
-            raise serializers.ValidationError("sort can't be specified before creation")
+            raise serializers.ValidationError(_("sort can't be specified before creation"))
         if sort > self.instance.notebook.notes.count() or sort < 1:
-            raise serializers.ValidationError("invalid sort number")
+            raise serializers.ValidationError(_("invalid sort number"))
         return sort
 
     def update(self, instance, validated_data):
@@ -140,10 +129,18 @@ class NoteSerializer(serializers.ModelSerializer):
         return instance
 
 
+class NoteSerializer(serializers.ModelSerializer):
+    """The read-only serializer for the note model"""
+
+    class Meta:
+        model = NoteModel
+        fields = ('sort', 'title')
+
+
 class NoteBookSerializer(serializers.ModelSerializer):
     """The serializer for the notebook model"""
 
-    notes = NoteModel(many=True, read_only=True)
+    notes = NoteSerializer(many=True, read_only=True)
 
     class Meta:
         model = NoteBookModel
@@ -156,9 +153,9 @@ class NoteBookSerializer(serializers.ModelSerializer):
         """validator for sort field"""
 
         if not self.instance:
-            raise serializers.ValidationError("sort can't be specified before creation")
+            raise serializers.ValidationError(_("sort can't be specified before creation"))
         if sort > self.instance.user.notebooks.count() or sort < 1:
-            raise serializers.ValidationError("invalid sort number")
+            raise serializers.ValidationError(_("invalid sort number"))
         return sort
 
     def update(self, instance, validated_data):

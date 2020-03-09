@@ -50,7 +50,7 @@ class NoteBookModel(models.Model):
     """The Model of the NoteBooks."""
 
     sort = models.PositiveIntegerField(null=True)
-    user = models.ForeignKey(UserProfileModel, on_delete=models.CASCADE, related_name='note_books')
+    user = models.ForeignKey(UserProfileModel, on_delete=models.CASCADE, related_name='notebooks')
     title = models.CharField(max_length=255)
 
     class Meta:
@@ -65,12 +65,12 @@ class NoteModel(models.Model):
     """The Model of the Note."""
 
     sort = models.PositiveIntegerField(null=True)
-    note_book = models.ForeignKey(NoteBookModel, on_delete=models.CASCADE, related_name='notes')
+    notebook = models.ForeignKey(NoteBookModel, on_delete=models.CASCADE, related_name='notes')
     title = models.CharField(max_length=255)
     text = models.TextField(blank=True)
 
     class Meta:
-        unique_together = ("note_book", "sort")
+        unique_together = ("notebook", "sort")
         ordering = ['sort']
 
     def __str__(self):

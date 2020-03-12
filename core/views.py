@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 14:49.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 20:23.
 
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.shortcuts import get_object_or_404
@@ -9,7 +9,8 @@ from rest_framework.response import Response
 
 from core.models import NoteBookModel, NoteModel, NoteAttachmentModel
 from core.permissions import UserProfilePermissions, NoteBookPermissions, NotePermissions, NoteAttachmentPermissions
-from core.serializers import UserProfileSerializer, NoteBookSerializer, NoteSerializer, NoteAttachmentSerializer
+from core.serializers import UserProfileSerializer, NoteBookSerializer, NoteSerializer, NoteAttachmentSerializer, \
+    NoteDetailSerializer
 
 
 @api_view(['POST'])
@@ -154,6 +155,29 @@ class NoteBookView(viewsets.ViewSet):
     permission_classes = (NoteBookPermissions,)
     serializer_class = NoteBookSerializer
 
+    def list(self, request):
+        """Lists all notebooks the user has.
+        Arguments:
+            request: the request data sent by the user, it is used
+                     to get the user's profile.
+        Returns:
+            HTTP 403 Response if the user is
+            not logged in,
+            HTTP 200 Response with all notebooks in
+            the user's profile in JSON.
+        """
+        user = request.user.profile
+        queryset = user.notebooks
+
+        paginator = LimitOffsetPagination()
+        paginator.default_limit = 10
+        paginator.max_limit = 100
+        paginated_queryset = paginator.paginate_queryset(queryset, request)
+        serializer = self.serializer_class(paginated_queryset, many=True)
+
+        return Response(data={'limit': paginator.limit, 'offset': paginator.offset,
+                              'count': paginator.count, 'notebooks': serializer.data})
+
     def create(self, request):
         """Creates a new notebook and adds it to the user's list.
         Arguments:
@@ -219,31 +243,33 @@ class NoteView(viewsets.ViewSet):
     """
 
     permission_classes = (NotePermissions,)
-    serializer_class = NoteSerializer
+    serializer_class = NoteDetailSerializer
 
-    def list(self, request):
-        """Lists all notes the user has.
+    def list(self, request, notebook_sort=None):
+        """Lists all notes the user has inside a notebook.
         Arguments:
             request: the request data sent by the user, it is used
                      to get the user's profile.
+            notebook_sort: the sort of the notebook that
+                        the requested notes are in.
         Returns:
+            HTTP 404 if notebook is not found
             HTTP 403 Response if the user is
-            not authorized to logged in,
-            HTTP 200 Response with all notes in
-            the user's profile in JSON.
+            not logged in,
+            HTTP 200 Response with all notes in JSON.
         """
-
         user = request.user.profile
-        queryset = user.notebooks.all()
+        notebook = get_object_or_404(NoteBookModel, user=user, sort=notebook_sort)
+        queryset = notebook.notes
 
         paginator = LimitOffsetPagination()
-        paginator.default_limit = 10
+        paginator.default_limit = 30
         paginator.max_limit = 100
         paginated_queryset = paginator.paginate_queryset(queryset, request)
-        serializer = NoteBookSerializer(paginated_queryset, many=True)
+        serializer = NoteSerializer(paginated_queryset, many=True)
 
         return Response(data={'limit': paginator.limit, 'offset': paginator.offset,
-                              'count': paginator.count, 'notebooks': serializer.data})
+                              'count': paginator.count, 'notes': serializer.data})
 
     def retrieve(self, request, notebook_sort=None, pk=None):
         """Retrieves a certain note from the user's list

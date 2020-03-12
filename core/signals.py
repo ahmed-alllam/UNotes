@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 09/03/2020, 16:03.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 20:23.
 
 import os
 
@@ -35,7 +35,7 @@ def add_sort_to_note(sender, **kwargs):
 
     note = kwargs['instance']
     if not note.pk:
-        latest_sort = NoteModel.objects.filter(notebook=note.note_book).count()
+        latest_sort = NoteModel.objects.filter(notebook=note.notebook).count()
         note.sort = latest_sort + 1
 
 

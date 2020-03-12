@@ -1,5 +1,5 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 14:49.
-
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 21:35.
+from django.urls import resolve
 from rest_framework import permissions
 
 
@@ -13,6 +13,8 @@ class UserProfilePermissions(permissions.BasePermission):
         the user is authenticated and has a valid profile.
         """
         if request.method in self.safe_methods:
+            return True
+        if request.method == 'GET' and resolve(request.path).url_name == 'signup':  # for debugging purposes
             return True
         if request.user.is_authenticated and hasattr(request.user, 'profile'):
             return True

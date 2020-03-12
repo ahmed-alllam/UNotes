@@ -2,10 +2,13 @@ language: python
 python:
   - "3.8"
 
+sudo: required
+
 services:
   - docker
 
 before_script:
+  - sudo chmod -R 777 .
   - pip install docker-compose
 
 script:

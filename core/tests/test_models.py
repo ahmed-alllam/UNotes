@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 20:23.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 21:35.
 
 import os
 
@@ -108,7 +108,7 @@ class TestNoteAttachment(TestCase):
 
     def setUp(self):
         """Setup for unittest"""
-        with open("core/tests/.test", 'w+'):
+        with open("media/.test", 'w+'):
             pass
 
     def test_note_attachment_sort_unique(self):
@@ -120,10 +120,10 @@ class TestNoteAttachment(TestCase):
         notebook = NoteBookModel.objects.create(user=user_profile, title='notebook')
         note = NoteModel.objects.create(notebook=notebook, title='note')
 
-        attachment1 = NoteAttachmentModel.objects.create(note=note, file='core/tests/.test')
+        attachment1 = NoteAttachmentModel.objects.create(note=note, file='.test')
         self.assertEqual(attachment1.sort, 1)
 
-        attachment2 = NoteAttachmentModel.objects.create(note=note, file='core/tests/.test')
+        attachment2 = NoteAttachmentModel.objects.create(note=note, file='.test')
         self.assertEqual(attachment2.sort, 2)
         self.assertNotEquals(attachment1.sort, attachment2.sort)
 
@@ -140,9 +140,8 @@ class TestNoteAttachment(TestCase):
         notebook = NoteBookModel.objects.create(user=user_profile, title='group1')
         note = NoteModel.objects.create(notebook=notebook, title='note')
 
-        attachment = NoteAttachmentModel.objects.create(note=note, file='core/tests/.test')
+        attachment = NoteAttachmentModel.objects.create(note=note, file='.test')
         self.assertTrue(os.path.isfile(attachment.file.path))
-        print(attachment.file.path)
         attachment.delete()
 
         self.assertFalse(os.path.isfile(attachment.file.path))

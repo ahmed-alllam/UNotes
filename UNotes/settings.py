@@ -10,7 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 14:58.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 21:35.
 
 import os
 
@@ -125,3 +125,6 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
 STATIC_URL = '/static/'
+
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")

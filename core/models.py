@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 09/03/2020, 15:47.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 21:35.
 
 import os
 import uuid
@@ -32,7 +32,6 @@ def attachment_upload(instance, filename):
     Returns:
         The unique path that the file will be stored in the DB.
     """
-
     return 'attachments/{0}.{1}'.format(uuid.uuid4().hex, os.path.splitext(filename))
 
 

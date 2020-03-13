@@ -1,12 +1,45 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 20:23.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 13/03/2020, 20:02.
 
 import os
+import re
 
-from django.db.models import F
 from django.db.models.signals import post_delete, pre_save
 from django.dispatch import receiver
+from django.utils.text import slugify
 
 from core.models import UserProfileModel, NoteModel, NoteBookModel, NoteAttachmentModel
+
+
+def _slug_strip(value):
+    """removes the '-' separator from the end or start of the string"""
+    return re.sub(r'^%s+|%s+$' % ('-', '-'), '', value)
+
+
+def unique_slugify(instance, parent, value):
+    """function used to give a unique slug to an instance"""
+
+    slug = slugify(value)
+    slug = slug[:255]  # limit its len to max_length of slug field
+
+    slug = _slug_strip(slug)
+    original_slug = slug
+
+    queryset = instance.__class__.objects.filter(**{parent: getattr(instance, parent)}).all()
+
+    if instance.pk:
+        queryset = queryset.exclude(pk=instance.pk)
+
+    _next = 2
+    while not slug or queryset.filter(slug=slug):
+        slug = original_slug
+        end = '-%s' % _next
+        if len(slug) + len(end) > 255:
+            slug = slug[:255 - len(end)]
+            slug = _slug_strip(slug)
+        slug = '%s%s' % (slug, end)
+        _next += 1
+
+    return slug
 
 
 @receiver(post_delete, sender=UserProfileModel)
@@ -18,67 +51,30 @@ def delete_user_account(sender, **kwargs):
 
 
 @receiver(pre_save, sender=NoteBookModel)
-def add_sort_to_note_book(sender, **kwargs):
+def add_slug_to_notebook(sender, **kwargs):
     """The receiver called before a notebook is saved
-    to give it a unique sort"""
+    to give it a unique slug"""
 
     notebook = kwargs['instance']
-    if not notebook.pk:
-        latest_sort = NoteBookModel.objects.filter(user=notebook.user).count()
-        notebook.sort = latest_sort + 1
+    notebook.slug = unique_slugify(notebook, 'user', notebook.title)
 
 
 @receiver(pre_save, sender=NoteModel)
-def add_sort_to_note(sender, **kwargs):
+def add_slug_to_note(sender, **kwargs):
     """The receiver called before a note is saved
-    to give it a unique sort"""
+    to give it a unique slug"""
 
     note = kwargs['instance']
-    if not note.pk:
-        latest_sort = NoteModel.objects.filter(notebook=note.notebook).count()
-        note.sort = latest_sort + 1
+    note.slug = unique_slugify(note, 'notebook', note.title)
 
 
 @receiver(pre_save, sender=NoteAttachmentModel)
-def add_sort_to_note_attachment(sender, **kwargs):
+def add_slug_to_note_attachment(sender, **kwargs):
     """The receiver called before a note attachment is saved
-    to give it a unique sort"""
+    to give it a unique slug"""
 
     attachment = kwargs['instance']
-    if not attachment.pk:
-        latest_sort = NoteAttachmentModel.objects.filter(note=attachment.note).count()
-        attachment.sort = latest_sort + 1
-
-
-@receiver(post_delete, sender=NoteBookModel)
-def resort_notebooks(sender, **kwargs):
-    """The receiver called after a note book is deleted
-    to resort them"""
-
-    notebooks = kwargs['instance'].user.notebooks.filter(sort__gt=kwargs['instance'].sort)
-    for notebook in notebooks:
-        notebook.sort -= 1
-        notebook.save()
-
-
-@receiver(post_delete, sender=NoteModel)
-def resort_notes(sender, **kwargs):
-    """The receiver called after a note is deleted
-    to resort them"""
-
-    notes = kwargs['instance'].notebook.notes.filter(sort__gt=kwargs['instance'].sort)
-    for note in notes:
-        note.sort -= 1
-        note.save()
-
-
-@receiver(post_delete, sender=NoteAttachmentModel)
-def resort_note_attachments(sender, **kwargs):
-    """The receiver called after a note attachment is deleted
-    to resort them"""
-
-    attachment = kwargs['instance']
-    attachment.note.attachments.filter(sort__gt=attachment.sort).update(sort=F('sort') - 1)
+    attachment.slug = unique_slugify(attachment, 'note', attachment.file.name)
 
 
 @receiver(post_delete, sender=NoteAttachmentModel)

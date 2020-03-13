@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 21:58.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 13/03/2020, 20:02.
 
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
@@ -25,6 +25,6 @@ urlpatterns = [
                                                'patch': 'partial_update',
                                                'delete': 'destroy'}), name='user-details'),
     path('notebooks/', include(note_book_router.urls)),
-    path('notebooks/<int:notebook_sort>/notes/', include(note_router.urls)),
-    path('notebooks/<int:notebook_sort>/notes/<int:note_sort>/attachment/', include(note_attachment_router.urls))
+    path('notebooks/<slug:notebook_slug>/notes/', include(note_router.urls)),
+    path('notebooks/<slug:notebook_slug>/notes/<slug:note_slug>/attachment/', include(note_attachment_router.urls))
 ]

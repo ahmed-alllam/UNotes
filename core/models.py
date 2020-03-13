@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 21:58.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 13/03/2020, 20:02.
 
 import uuid
 
@@ -46,13 +46,12 @@ class UserProfileModel(models.Model):
 class NoteBookModel(models.Model):
     """The Model of the NoteBooks."""
 
-    sort = models.PositiveIntegerField(null=True)
+    slug = models.SlugField(max_length=255)
     user = models.ForeignKey(UserProfileModel, on_delete=models.CASCADE, related_name='notebooks')
     title = models.CharField(max_length=255)
 
     class Meta:
-        ordering = ['sort']
-        unique_together = ("user", "sort")
+        unique_together = ("user", "slug")
 
     def __str__(self):
         return self.title
@@ -61,14 +60,13 @@ class NoteBookModel(models.Model):
 class NoteModel(models.Model):
     """The Model of the Note."""
 
-    sort = models.PositiveIntegerField(null=True)
+    slug = models.SlugField(max_length=255)
     notebook = models.ForeignKey(NoteBookModel, on_delete=models.CASCADE, related_name='notes')
     title = models.CharField(max_length=255)
     text = models.TextField(blank=True)
 
     class Meta:
-        unique_together = ("notebook", "sort")
-        ordering = ['sort']
+        unique_together = ("notebook", "slug")
 
     def __str__(self):
         return self.title
@@ -85,10 +83,9 @@ class NoteAttachmentModel(models.Model):
     """an alias to filefield to enable
     having multiple file attachments in a Note"""
 
-    sort = models.PositiveIntegerField(null=True)
+    slug = models.SlugField(max_length=255)
     note = models.ForeignKey(NoteModel, on_delete=models.CASCADE, related_name='attachments')
     file = models.FileField(upload_to=attachment_upload, validators=[filesize])
 
     class Meta:
-        unique_together = ("note", "sort")
-        ordering = ['sort']
+        unique_together = ("note", "slug")

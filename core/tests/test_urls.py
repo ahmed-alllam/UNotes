@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 20:23.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 13/03/2020, 20:02.
 
 from django.test import TestCase
 from django.urls import reverse, resolve
@@ -43,7 +43,7 @@ class TestNoteBook(TestCase):
 
     def test_notebook_detail(self):
         """test for users notebook details url"""
-        url = reverse('core:notebooks-detail', kwargs={'pk': 1})
+        url = reverse('core:notebooks-detail', kwargs={'slug': 'slug'})
         self.assertEqual(resolve(url).func.__name__,
                          NoteBookView.as_view({'get': 'retrieve'}).__name__)
 
@@ -53,13 +53,13 @@ class TestNote(TestCase):
 
     def test_note_create(self):
         """test for users note create url"""
-        url = reverse('core:notes-list', kwargs={'notebook_sort': 1})
+        url = reverse('core:notes-list', kwargs={'notebook_slug': 'slug'})
         self.assertEqual(resolve(url).func.__name__,
                          NoteView.as_view({'post': 'create'}).__name__)
 
     def test_note_detail(self):
         """test for users note details url"""
-        url = reverse('core:notes-detail', kwargs={'notebook_sort': 1, 'pk': 1})
+        url = reverse('core:notes-detail', kwargs={'notebook_slug': 'slug', 'slug': 'slug'})
         self.assertEqual(resolve(url).func.__name__,
                          NoteView.as_view({'get': 'retrieve'}).__name__)
 
@@ -69,13 +69,13 @@ class TestNoteAttachments(TestCase):
 
     def test_attachments_list(self):
         """test for users attachments list url"""
-        url = reverse('core:attachments-list', kwargs={'notebook_sort': 1, 'note_sort': 1})
+        url = reverse('core:attachments-list', kwargs={'notebook_slug': 'slug', 'note_slug': 'slug'})
         self.assertEqual(resolve(url).func.__name__,
                          NoteAttachmentView.as_view({'get': 'list'}).__name__)
 
     def test_attachment_detail(self):
         """test for users attachments details url"""
-        url = reverse('core:attachments-detail', kwargs={'notebook_sort': 1,
-                                                         'note_sort': 1, 'pk': 1})
+        url = reverse('core:attachments-detail', kwargs={'notebook_slug': 'slug',
+                                                         'note_slug': 'slug', 'slug': 'slug'})
         self.assertEqual(resolve(url).func.__name__,
                          NoteAttachmentView.as_view({'get': 'retrieve'}).__name__)

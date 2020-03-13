@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 10/03/2020, 00:09.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 13/03/2020, 20:02.
 
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
@@ -67,9 +67,9 @@ class NoteAttachmentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NoteAttachmentModel
-        fields = ('sort', 'file')
+        fields = ('slug', 'file')
         extra_kwargs = {
-            'sort': {'read_only': True}
+            'slug': {'read_only': True}
         }
 
 
@@ -80,9 +80,9 @@ class NoteDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NoteModel
-        fields = ('sort', 'title', 'text', 'attachments')
+        fields = ('slug', 'title', 'text', 'attachments')
         extra_kwargs = {
-            'sort': {'read_only': True}
+            'slug': {'read_only': True}
         }
 
 
@@ -91,7 +91,7 @@ class NoteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NoteModel
-        fields = ('sort', 'title')
+        fields = ('slug', 'title')
 
 
 class NoteBookSerializer(serializers.ModelSerializer):
@@ -101,7 +101,7 @@ class NoteBookSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = NoteBookModel
-        fields = ('sort', 'title', 'notes')
+        fields = ('slug', 'title', 'notes')
         extra_kwargs = {
-            'sort': {'read_only': True}
+            'slug': {'read_only': True}
         }

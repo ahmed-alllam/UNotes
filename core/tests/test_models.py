@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 12/03/2020, 21:35.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 13/03/2020, 20:02.
 
 import os
 
@@ -42,22 +42,18 @@ class TestUsers(TestCase):
 class TestNoteBook(TestCase):
     """UnitTest for notebook model"""
 
-    def test_notebook_sort_unique(self):
-        """test for notebook sort uniqueness"""
+    def test_notebook_slug_unique(self):
+        """test for notebook slug uniqueness"""
 
         user = User.objects.create_user(username='username', password='password')
         user_profile = UserProfileModel.objects.create(account=user)
 
-        notebook1 = NoteBookModel.objects.create(user=user_profile, title='notebook1')
-        self.assertEqual(notebook1.sort, 1)
+        notebook1 = NoteBookModel.objects.create(user=user_profile, title='notebook')
+        self.assertEqual(notebook1.slug, 'notebook')
 
-        notebook2 = NoteBookModel.objects.create(user=user_profile, title='notebook2')
-        self.assertEqual(notebook2.sort, 2)
-        self.assertNotEquals(notebook1.sort, notebook2.sort)
-
-        notebook1.delete()
-        notebook2.refresh_from_db()
-        self.assertEqual(notebook2.sort, 1)  # resorted from signals
+        notebook2 = NoteBookModel.objects.create(user=user_profile, title='notebook')
+        self.assertEqual(notebook2.slug, 'notebook-2')
+        self.assertNotEquals(notebook1.slug, notebook2.slug)
 
     def test_notebook_str(self):
         """test for notebook __str__ function"""
@@ -71,27 +67,27 @@ class TestNoteBook(TestCase):
 class TestNote(TestCase):
     """UnitTest for note model"""
 
-    def test_note_sort_unique(self):
-        """test for note sort uniqueness"""
+    def test_note_slug_unique(self):
+        """test for note slug uniqueness"""
 
         user = User.objects.create_user(username='username', password='password')
         user_profile = UserProfileModel.objects.create(account=user)
 
         notebook1 = NoteBookModel.objects.create(user=user_profile, title='notebook1')
 
-        note1 = NoteModel.objects.create(notebook=notebook1, title='note1')
-        self.assertEqual(note1.sort, 1)
+        note1 = NoteModel.objects.create(notebook=notebook1, title='note')
+        self.assertEqual(note1.slug, 'note')
 
-        note2 = NoteModel.objects.create(notebook=notebook1, title='note2')
-        self.assertEqual(note2.sort, 2)
-        self.assertNotEquals(note1.sort, note2.sort)
+        note2 = NoteModel.objects.create(notebook=notebook1, title='note')
+        self.assertEqual(note2.slug, 'note-2')
+        self.assertNotEquals(note1.slug, note2.slug)
 
-        note1.delete()
-        note2.refresh_from_db()
-        self.assertEqual(note2.sort, 1)  # resorted from signals
+        notebook2 = NoteBookModel.objects.create(user=user_profile, title='notebook2')
+        note3 = NoteModel.objects.create(notebook=notebook2, title='note')
+        self.assertEqual(note3.slug, 'note')
 
     def test_note_str(self):
-        """test for note __str__ unction"""
+        """test for note __str__ function"""
 
         user = User.objects.create_user(username='username', password='password')
         user_profile = UserProfileModel.objects.create(account=user)
@@ -111,8 +107,8 @@ class TestNoteAttachment(TestCase):
         with open("media/.test", 'w+'):
             pass
 
-    def test_note_attachment_sort_unique(self):
-        """test for note attachment sort uniqueness"""
+    def test_note_attachment_slug_unique(self):
+        """test for note attachment slug uniqueness"""
 
         user = User.objects.create_user(username='username', password='password')
         user_profile = UserProfileModel.objects.create(account=user)
@@ -121,15 +117,11 @@ class TestNoteAttachment(TestCase):
         note = NoteModel.objects.create(notebook=notebook, title='note')
 
         attachment1 = NoteAttachmentModel.objects.create(note=note, file='.test')
-        self.assertEqual(attachment1.sort, 1)
+        self.assertEqual(attachment1.slug, 'test')
 
         attachment2 = NoteAttachmentModel.objects.create(note=note, file='.test')
-        self.assertEqual(attachment2.sort, 2)
-        self.assertNotEquals(attachment1.sort, attachment2.sort)
-
-        attachment1.delete()
-        attachment2.refresh_from_db()
-        self.assertEqual(attachment2.sort, 1)  # resorted from signals
+        self.assertEqual(attachment2.slug, 'test-2')
+        self.assertNotEquals(attachment1.slug, attachment2.slug)
 
     def test_file_delete(self):
         """test for note attachment delete file from os function"""

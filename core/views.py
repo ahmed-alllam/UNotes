@@ -1,4 +1,4 @@
-#  Copyright (c) Code Written and Tested by Ahmed Emad in 13/03/2020, 20:02.
+#  Copyright (c) Code Written and Tested by Ahmed Emad in 14/03/2020, 22:30.
 
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.shortcuts import get_object_or_404
@@ -168,7 +168,7 @@ class NoteBookView(viewsets.ViewSet):
             the user's profile in JSON.
         """
         user = request.user.profile
-        queryset = user.notebooks
+        queryset = user.notebooks.all()
 
         paginator = LimitOffsetPagination()
         paginator.default_limit = 10
@@ -260,7 +260,7 @@ class NoteView(viewsets.ViewSet):
         """
         user = request.user.profile
         notebook = get_object_or_404(NoteBookModel, user=user, slug=notebook_slug)
-        queryset = notebook.notes
+        queryset = notebook.notes.all()
 
         paginator = LimitOffsetPagination()
         paginator.default_limit = 30

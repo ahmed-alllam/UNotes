@@ -3,7 +3,7 @@
 
 This is a RESTful **API** for a **Notes Taking app**.
 The **API** is designed using **Django** and **Postgres** database.
-The Project is completely done and the fully documented.
+The Project is completely done and fully documented.
 The Project is **open-source** and not used commercially be any means.
 The **API** is fully tested with **100% Code coverage** with automated **tests** in a separate folder.
 The **docker** and **docker-compose** images configuration files are stored with in the project so that you can use it and test it from anywhere with no problems.
